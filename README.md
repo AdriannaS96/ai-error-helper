@@ -47,6 +47,11 @@ Each run handles one message. Empty input exits without contacting the API.
 Press Ctrl+C to exit. Remove secrets from error messages before submitting them:
 the message is sent to OpenAI. API calls may incur charges on your API account.
 
+In normal mode, if the error starts with `ModuleNotFoundError:`, the app reads
+[the missing-module guide](knowledge/missing-python-module.md) locally and sends
+it to the model alongside the error. When the model returns an answer, the app
+prints the guide's path under it. Other errors use the error message alone.
+
 ## Offline demo
 
 After installing the dependencies, run this without a key or internet connection:
@@ -101,6 +106,7 @@ configuration or API code can run. Both constants are predefined strings.
 ## Project files
 
 - `app.py`: all application logic.
+- `knowledge/missing-python-module.md`: diagnostic guide for missing Python modules.
 - `requirements.txt`: the two required libraries.
 - `.env.example`: a configuration template without a real key.
 - `.gitignore`: excludes `.env`, `.venv`, and generated Python files from Git.
