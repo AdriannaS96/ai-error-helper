@@ -33,6 +33,15 @@ Three diagnostic steps:
 """
 
 
+def find_guide(error_message: str) -> tuple[str, str] | None:
+    if not error_message.startswith("ModuleNotFoundError:"):
+        return None
+
+    source = "knowledge/missing-python-module.md"
+    guide_path = Path(__file__).resolve().parent / source
+    return guide_path.read_text(encoding="utf-8"), source
+
+
 def main():
     parser = argparse.ArgumentParser(description="Understand an error message.")
     parser.add_argument("--demo", action="store_true", help="Use an offline example.")
@@ -65,16 +74,24 @@ def main():
         print("Set OPENAI_MODEL in your local .env file.")
         return
 
+    guide = find_guide(error_message)
+    model_input = error_message
+    if guide is not None:
+        guide_text, source = guide
+        model_input = f"Error message:\n{error_message}\n\nDiagnostic guide:\n{guide_text}"
+
     try:
         # The SDK sends text to the API. No command execution tools are provided.
         with OpenAI(api_key=api_key, timeout=60.0, max_retries=0) as client:
             response = client.responses.create(
                 model=model,
                 instructions=INSTRUCTIONS,
-                input=error_message,
+                input=model_input,
                 store=False,
             )
         print(response.output_text or "The model returned no text. Please try again.")
+        if guide is not None and response.output_text:
+            print(f"Source: {source}")
     except AuthenticationError:
         print("Authentication failed. Check OPENAI_API_KEY in .env.")
     except RateLimitError:
